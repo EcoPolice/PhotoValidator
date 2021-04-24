@@ -4,6 +4,8 @@
 
 Запуск вебсервера 
 ```
+python -m venv env
+pip install < requirements.txt
 . env/bin/activate
 python wsgi_8080.py&
 ```
