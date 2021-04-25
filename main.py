@@ -1,21 +1,26 @@
 from flask import Flask, request, jsonify
+from tensorflow import keras
+import numpy as np
+from keras.preprocessing.image import img_to_array
+import imghdr
+import cv2
 
 app = Flask(__name__)
-
-from tensorflow import keras
-
 model = keras.models.load_model('model')
 
-import numpy as np
-import matplotlib.pyplot as plt
-from keras.preprocessing.image import img_to_array
 
-import cv2
+def check_photo(file_name):
+    if imghdr.what(file_name) is None:
+        raise Exception("Bad photo")
 
 
 def predict_test(filename):
     data = []
-    img_read = plt.imread(filename)
+    check_photo(filename)
+    try:
+        img_read = cv2.imread(filename)
+    except cv2.error as e:
+        raise Exception('Bad photo')
     img_resize = cv2.resize(img_read, (100, 100))
     img_array = img_to_array(img_resize)
     img_array = img_array / 255
@@ -32,6 +37,6 @@ def index():
     request_data = request.get_json(force=True)
     print(request_data)
     try:
-        return jsonify({'error': False, 'is_oil': int(predict_test(request_data['filepath'])) }), 200
+        return jsonify({'error': False, 'is_oil': int(predict_test(request_data['filepath']))}), 200
     except Exception as e:
         return jsonify({'error': True, 'message': str(e)}), 200
